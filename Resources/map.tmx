@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.5" orientation="orthogonal" renderorder="right-down" width="36" height="24" tilewidth="30" tileheight="30" infinite="0" nextobjectid="38">
+ <tileset firstgid="1" source="a.tsx"/>
+ <tileset firstgid="13" source="../d.tsx"/>
+ <tileset firstgid="25" source="../c.tsx"/>
+ <tileset firstgid="37" source="../b.tsx"/>
+ <tileset firstgid="49" source="../a.tsx"/>
+ <tileset firstgid="61" source="b.tsx"/>
+ <layer name="块层 1" width="36" height="24" locked="1">
+  <data encoding="base64" compression="zlib">
+   eJzjYGBg4BjFo3gUjwjsiISdB8B+oJ0NyG5wQcID5R5kNwxX99hC8WBwjy0aHnXP4I6vwZieqeUeYBnkAMMDWB7C3UBv+0fxKB7FA4cBf102hQ==
+  </data>
+ </layer>
+ <objectgroup color="#ff0000" name="Gate" visible="0" opacity="0.86">
+  <object id="12" name="RightGate" type="Gate" x="974" y="226" width="106" height="278"/>
+  <object id="32" name="LeftGate" type="Gate" x="0" y="222" width="102" height="282"/>
+ </objectgroup>
+</map>
