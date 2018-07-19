@@ -58,9 +58,23 @@ bool GameScene::init()
 	preloadMusic();
 	addSprite();
 	addListener();
-	
+	sqlite = SqliteManager::getInstance();
+	if (sqlite) {
+		sqlite->createDatabase();
+		sqlite->createTable();
+	}
+
+	TTFConfig ttfConfig;
+	ttfConfig.fontFilePath = "fonts/arial.ttf";
+	ttfConfig.fontSize = 36;
+	number = Label::createWithTTF(ttfConfig, "0:0");
+	number->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - number->getContentSize().height));
+	this->addChild(number, 1);
+	score1 = 0;
+	score2 = 0;
 	schedule(schedule_selector(GameScene::update), 0.07f, kRepeatForever, 0);
 	schedule(schedule_selector(GameScene::updateBomb), 10.0f, kRepeatForever, 0);
+	schedule(schedule_selector(GameScene::explorate), 0.1f, kRepeatForever, 0);
 	return true;
 }
 
@@ -72,7 +86,10 @@ void GameScene::preloadMusic()
 	//sae->playBackgroundMusic("bgm.mp3", true);
 }
 
-void GameScene::addSprite(){
+/*
+** 添加精灵：足球，player1，player2;血条；
+*/
+void GameScene::addSprite() {
 
 	auto texture = Director::getInstance()->getTextureCache()->addImage("player1.png");
 	auto texture2 = Director::getInstance()->getTextureCache()->addImage("player2.png");
@@ -86,14 +103,14 @@ void GameScene::addSprite(){
 	frame02_left = SpriteFrame::createWithTexture(texture2, CC_RECT_PIXELS_TO_POINTS(Rect(0, 100, 100, 100)));
 	frame02_up = SpriteFrame::createWithTexture(texture2, CC_RECT_PIXELS_TO_POINTS(Rect(0, 300, 100, 100)));
 	frame02_down = SpriteFrame::createWithTexture(texture2, CC_RECT_PIXELS_TO_POINTS(Rect(0, 0, 100, 100)));
-	
+
 	//添加足球
 	football = Sprite::create("ball.png");
 	football->setPosition(visibleSize / 2);
 	football->setScale(0.2f, 0.2f);
 
 	//添加足球刚体
-	auto ballbody = PhysicsBody::createCircle(football->getContentSize().width/2, PhysicsMaterial(1.0f, 0.0f, 0.0f));
+	ballbody = PhysicsBody::createCircle(football->getContentSize().width / 2, PhysicsMaterial(1.0f, 0.0f, 0.0f));
 	ballbody->setDynamic(true);
 	ballbody->setRotationEnable(false);
 	ballbody->setGravityEnable(false);
@@ -102,7 +119,7 @@ void GameScene::addSprite(){
 	football->setName("football");
 
 	addChild(football, 3);
-	
+
 	//添加玩家1
 	player1 = Sprite::createWithSpriteFrame(frame01_right);
 	player1->setPosition(Vec2(origin.x + visibleSize.width / 2 - 100,
@@ -251,8 +268,6 @@ void GameScene::addListener()
 
 void GameScene::onKeyPressed(EventKeyboard::KeyCode code, Event* event) {
 
-	int distance;
-
 	switch (code) {
 	case EventKeyboard::KeyCode::KEY_CAPITAL_A:
 	case EventKeyboard::KeyCode::KEY_A:
@@ -392,7 +407,7 @@ bool GameScene::onConcactBegin(PhysicsContact & contact) {
 			return true;
 
 		else if ((sp1->getName() == "player" && sp2->getName() == "football") || (sp1->getName() == "football" && sp2->getName() == "player")) {
-			
+
 		}
 	}
 
@@ -539,39 +554,137 @@ void GameScene::moveCharacter2(char c) {
 	}
 }
 
+bool GameScene::isOnEdge() {
+	if (football->getPosition().y < visibleSize.height / 15 || football->getPosition().y > visibleSize.height * 14.0 / 15) {
+		//if (football->getPosition().x < visibleSize.width / 20 || football->getPosition().x > visibleSize.width * 5.0/ 6) 
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
+int GameScene::goalIn() {
+	if (football->getPosition().y > visibleSize.height / 3 && football->getPosition().y< 2.0 / 3 * visibleSize.height) {
+		if (football->getPosition().x < visibleSize.width / 12) {
+			return 1;
+		}
+		else if (football->getPosition().x > 11.0 / 12 * visibleSize.width) {
+			return 2;
+		}
+		else {
+			return 0;
+		}
+	}
+}
 
 void GameScene::update(float) {
+	if (goalIn() == 1) {
+		score1++;
+		changeHp(pT2,true);
+		sqlite->UpdateData(sqlite->getUsername1().c_str(), score1);
+		string scoreStr = "";
+		scoreStr += to_string(score1);
+		scoreStr += ":";
+		scoreStr += to_string(score2);
+		number->setString(scoreStr);
+		football->setPosition(visibleSize / 2);
+		ballbody->setVelocity(Vec2(0, 0));
+	}
+	else if (goalIn() == 2) {
+		score2++;
+		changeHp(pT1, true);
+		sqlite->UpdateData(sqlite->getUsername2().c_str(), score2);
+		string scoreStr = "";
+		scoreStr += to_string(score1);
+		scoreStr += ":";
+		scoreStr += to_string(score2);
+		number->setString(scoreStr);
+		football->setPosition(visibleSize / 2);
+		ballbody->setVelocity(Vec2(0, 0));
+	}
+	if (pT1->getPercentage() == 0 || pT2->getPercentage() == 0) {
+		GameOver();
+	}
+	if (isOnEdge()) {
+		Vec2 pos = football->getPosition();
+		if (pos.y > visibleSize.height / 2) {
+			football->setPosition(Vec2(pos.x, visibleSize.height / 10));
+			ballbody->setVelocity(Vec2(0, 100));
+		}
+		else {
+			football->setPosition(Vec2(pos.x, visibleSize.height * 9.0 / 10));
+			ballbody->setVelocity(Vec2(0, -100));
+		}
+
+	}
+}
+
+void GameScene::GameOver() {
+	unschedule(schedule_selector(GameScene::update));
+	unschedule(schedule_selector(GameScene::updateBomb));
+
+	_eventDispatcher->removeAllEventListeners();
+
 	TTFConfig ttfConfig;
 	ttfConfig.fontFilePath = "fonts/arial.ttf";
 	ttfConfig.fontSize = 36;
-	if (score == 0)
-		number = Label::createWithTTF(ttfConfig, "0:0");
-	else if (score == 1)
-		number = Label::createWithTTF(ttfConfig, "1:0");
-	else if (score == -1)
-		number = Label::createWithTTF(ttfConfig, "0:1");
-	else if (score == 2)
-		number = Label::createWithTTF(ttfConfig, "Player1 Win!");
+	if (pT1->getPercentage() == 0) {
+		info = Label::createWithTTF(ttfConfig, sqlite->getUsername1()+ " Win!");
+	}
 	else
-		number = Label::createWithTTF(ttfConfig, "Player2 Win!");
-	number->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - number->getContentSize().height));
-	this->addChild(number, 1);
+		info = Label::createWithTTF(ttfConfig, sqlite->getUsername2()+" Win!");
+	info->setPosition(Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height - info->getContentSize().height - 100));
+	this->addChild(info, 1);
+
+	 restartButton = MenuItemFont::create("ReStart", CC_CALLBACK_1(GameScene::restartButtonCallback, this));
+	if (restartButton) {
+		float x = origin.x + visibleSize.width / 3;
+		float y = origin.y + restartButton->getContentSize().height / 2 + 100;
+		restartButton->setPosition(Vec2(x, y));
+	}
+	Menu* menu1 = Menu::create(restartButton, NULL);
+	menu1->setPosition(Vec2::ZERO);
+	this->addChild(menu1, 1);
 }
+
+void GameScene::restartButtonCallback(Ref* pSender)
+{
+	info->removeFromParent();
+	restartButton->removeFromParentAndCleanup(0);
+	schedule(schedule_selector(GameScene::update), 0.07f, kRepeatForever, 0);
+	schedule(schedule_selector(GameScene::updateBomb), 10.0f, kRepeatForever, 0);
+
+	auto keyboardListener = EventListenerKeyboard::create();
+	keyboardListener->onKeyPressed = CC_CALLBACK_2(GameScene::onKeyPressed, this);
+	keyboardListener->onKeyReleased = CC_CALLBACK_2(GameScene::onKeyReleased, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyboardListener, this);
+
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onConcactBegin, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
+
+	score1 = 0;
+	score2 = 0;
+	football->setPosition(visibleSize / 2);
+	ballbody->setVelocity(Vec2(0, 0));
+	pT1->setPercentage(100);
+	pT2->setPercentage(100);
+}
+
 
 void GameScene::createBomb() {
 	auto mybomb = Factory::getInstance()->createBomb();
-	Factory::getInstance()->initSpriteFrame();
-	for (int i = 0; i < visibleSize.height; i+= mybomb->getContentSize().height*0.2)
+	for (int i = 0; i < visibleSize.height; i += mybomb->getContentSize().height*0.2)
 	{
-		for (int j = 0; j < visibleSize.width; j+= mybomb->getContentSize().width*0.2)
+		for (int j = 0; j < visibleSize.width; j += mybomb->getContentSize().width*0.2)
 		{
 			auto lucky = random(0, 99);
 			if (lucky % 25 == 0)
 			{
 				auto bomb = Factory::getInstance()->createBomb();
 				bomb->setScale(0.2f, 0.2f);
-				auto bombbody = PhysicsBody::createCircle(bomb->getContentSize().width/2, PhysicsMaterial(1.0f, 1.0f, 1.0f));
+				auto bombbody = PhysicsBody::createCircle(bomb->getContentSize().width / 2, PhysicsMaterial(1.0f, 1.0f, 1.0f));
 				bombbody->setDynamic(false);
 				bombbody->setRotationEnable(false);
 				bombbody->setGravityEnable(false);
@@ -598,5 +711,37 @@ void GameScene::updateBomb(float)
 
 void GameScene::explorate(float)
 {
-	Factory::getInstance()->exploration();
+	if (Factory::getInstance()->getexplored() == true)
+	{
+		auto fac = Factory::getInstance();
+		Rect playerRect = player1->getBoundingBox();
+		Rect attackRect = Rect(playerRect.origin.x, playerRect.origin.y,
+			playerRect.getMaxX() - playerRect.getMinX() + 40,
+			playerRect.getMaxY() - playerRect.getMinY() + 40);
+		Sprite* collision = fac->collider(attackRect);
+		if (collision != NULL)
+		{
+			changeHp(pT1, false);
+		}
+
+		playerRect = player2->getBoundingBox();
+		attackRect = Rect(playerRect.origin.x, playerRect.origin.y,
+			playerRect.getMaxX() - playerRect.getMinX() + 40,
+			playerRect.getMaxY() - playerRect.getMinY() + 40);
+		collision = fac->collider(attackRect);
+		if (collision != NULL)
+		{
+			changeHp(pT2, false);
+		}
+
+		Factory::getInstance()->setexplored(false);
+	}
+}
+
+void GameScene::changeHp(ProgressTimer * pT, bool f)
+{
+	auto hppercent = pT->getPercentage();
+	hppercent += f ? 15 : -15;
+	auto progress = ProgressTo::create(1.0f, hppercent);
+	pT->runAction(progress);
 }

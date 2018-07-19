@@ -26,6 +26,16 @@ void Factory::initSpriteFrame() {
 	}
 }
 
+bool Factory::getexplored()
+{
+	return explored;
+}
+
+void Factory::setexplored(bool f)
+{
+	explored = f;
+}
+
 Sprite * Factory::createBomb() {
 	Sprite* bo = Sprite::create("bomb.png");
 	bomb.pushBack(bo);
@@ -36,10 +46,13 @@ void Factory::exploration() {
 		i->stopAllActions();
 		Animation* anim = Animation::createWithSpriteFrames(explore, 0.05f, 1);
 		Animate* ani = Animate::create(anim);
-		Sequence* seq = Sequence::create(ScaleBy::create(1.f, 1.5f),ani ,CallFunc::create(CC_CALLBACK_0(Sprite::removeFromParent, i)), NULL);
+		Sequence* seq = Sequence::create(ScaleBy::create(1.f, 1.5f), CallFunc::create([=] {
+			explored = true;
+		}), ani, CallFunc::create(CC_CALLBACK_0(Sprite::removeFromParent, i)), CallFunc::create([=] {
+			bomb.clear();
+		}), NULL);
 		i->runAction(seq);
 	}
-	bomb.clear();
 }
 void Factory::removeBomb(Sprite* sp) {
 	Animation* anim = Animation::createWithSpriteFrames(explore, 0.2);
@@ -50,11 +63,11 @@ void Factory::removeBomb(Sprite* sp) {
 }
 
 Sprite* Factory::collider(Rect rect) {
-	/*for (auto i : monster) {
+	for (auto i : bomb) {
 		if (rect.containsPoint(i->getPosition())) {
 			return i;
 		}
-	}*/
+	}
 	return NULL;
 }
 

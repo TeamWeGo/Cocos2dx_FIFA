@@ -17,10 +17,15 @@ public:
 	//≥ı ºªØ±¨’®÷°∂Øª≠
 	void initSpriteFrame();
 
+	bool getexplored();
+
+	void setexplored(bool f);
+
 private:
 	Factory();
 	Vector<Sprite*> bomb;
 	cocos2d::Vector<SpriteFrame*> explore;
 	static Factory* factory;
 	int bomb_count;
+	bool explored = false;
 };

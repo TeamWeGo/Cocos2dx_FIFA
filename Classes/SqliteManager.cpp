@@ -103,7 +103,7 @@ bool SqliteManager::UpdateData(const char* username, int health)
 	string s2;
 	s2 = std::to_string(health);
 	string s3(" where username=");
-	sql = s1 + "'" + s2 +"'"+s3+ username;
+	sql = s1  + s2 +s3+ "\""+username+"\"";
 	result = sqlite3_exec(pdb, sql.c_str(), NULL, NULL, NULL);
 	if (result == SQLITE_OK) {
 		return true;

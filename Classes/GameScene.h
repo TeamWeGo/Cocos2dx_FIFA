@@ -1,5 +1,6 @@
 #pragma once
 #include "cocos2d.h"
+#include "SqliteManager.h"
 #include <stdio.h>
 using namespace cocos2d;
 using namespace std;
@@ -18,20 +19,24 @@ public:
 	void moveCharacter1(char);		//移动玩家1
 	void moveCharacter2(char);		//移动玩家2
 	void hurtEvent(Ref*);				//被炸到
-	void update(float);	
+	void update(float);
 
 	void updateBomb(float);				//产生炸弹
 	void createBomb();
 	void explorate(float);
 
+	void changeHp(ProgressTimer * pT, bool f);
+
 	void preloadMusic();				//预加载音效
 	void addSprite();					// 添加背景和各种精灵
 	void addListener();					// 添加监听器
-
+	bool isOnEdge();
 	void onKeyPressed(EventKeyboard::KeyCode code, Event* event);
 	void onKeyReleased(EventKeyboard::KeyCode code, Event* event);
 	bool onConcactBegin(PhysicsContact & contact);
-
+	int goalIn();
+	void GameOver();
+	void restartButtonCallback(Ref* pSender);
 private:
 	PhysicsWorld * m_world;
 	cocos2d::Sprite* player1;
@@ -57,15 +62,16 @@ private:
 	cocos2d::ProgressTimer* pT1;				//玩家1血条
 	cocos2d::ProgressTimer* pT2;				//玩家2血条
 
-	//玩家方向
+												//玩家方向
 	int direction1 = 1, direction2 = 3;
-	
+
 	//是否移动
 	bool isMove1 = false, isMove2 = false;
 	char moveKey1, moveKey2;
 
 	//比分
 	int score;
+	int score1, score2;
 	cocos2d::Label* number;
 
 	//各方向初始状态
@@ -81,6 +87,11 @@ private:
 	list<char> keystatep1;
 	list<char> keystatep2;
 
+
 	//足球
 	cocos2d::Sprite* football;
+	PhysicsBody* ballbody;
+	SqliteManager* sqlite;
+	cocos2d::Label* info;
+	MenuItemFont* restartButton;
 };

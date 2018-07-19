@@ -101,7 +101,7 @@ bool MenuPage::init()
 	rank = Label::create("", "arial", 30);
 	if (rank) {
 		float x = 2*visibleSize.width / 3;
-		float y = visibleSize.height / 2+100;
+		float y = visibleSize.height / 2+0;
 		rank->setPosition(Vec2(x, y));
 		addChild(rank, 1);
 	}
@@ -119,6 +119,12 @@ bool MenuPage::init()
 		sqlite->createDatabase();
 		sqlite->createTable();
 	}
+
+	auto bgsprite = Sprite::create("bg.jpg");
+	bgsprite->setPosition(visibleSize / 2);
+	bgsprite->setScale(visibleSize.width / bgsprite->getContentSize().width,
+		visibleSize.height / bgsprite->getContentSize().height);
+	this->addChild(bgsprite, 0);
 
     return true;
 }
