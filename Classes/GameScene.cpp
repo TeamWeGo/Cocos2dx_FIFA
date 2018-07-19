@@ -150,10 +150,10 @@ void GameScene::addSprite(){
 	pT1->setMidpoint(Point(0, 1));
 	pT1->setPercentage(100);
 	pT1->setPosition(Vec2(origin.x + 14 * pT1->getContentSize().width, origin.y + visibleSize.height - 2 * pT1->getContentSize().height));
-	addChild(pT1, 1);
+	addChild(pT1, 2);
 	sp1->setAnchorPoint(Vec2(0, 0));
 	sp1->setPosition(Vec2(origin.x + pT1->getContentSize().width, origin.y + visibleSize.height - sp1->getContentSize().height));
-	addChild(sp1, 0);
+	addChild(sp1, 1);
 
 	pT2 = ProgressTimer::create(sp2);
 	pT2->setScaleX(90);
@@ -163,10 +163,10 @@ void GameScene::addSprite(){
 	pT2->setMidpoint(Point(0, 1));
 	pT2->setPercentage(100);
 	pT2->setPosition(Vec2(origin.x + 14 * pT2->getContentSize().width + 500, origin.y + visibleSize.height - 2 * pT2->getContentSize().height));
-	addChild(pT2, 1);
+	addChild(pT2, 2);
 	sp2->setAnchorPoint(Vec2(0, 0));
 	sp2->setPosition(Vec2(origin.x + pT2->getContentSize().width + 500, origin.y + visibleSize.height - sp2->getContentSize().height));
-	addChild(sp2, 0);
+	addChild(sp2, 1);
 
 
 	run_right1.reserve(5);
