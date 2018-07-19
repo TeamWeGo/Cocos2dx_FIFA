@@ -110,11 +110,12 @@ void GameScene::addSprite(){
 	player1->setScale(2.0f, 2.0f);
 
 	//添加玩家1刚体
-	auto playerbody = PhysicsBody::createBox(player1->getContentSize()*0.6f, PhysicsMaterial(1000.0f, 0.0f, 50.0f));
+	auto playerbody = PhysicsBody::createBox(player1->getContentSize()*0.4f, PhysicsMaterial(1000.0f, 0.0f, 50.0f));
 	playerbody->setDynamic(true);
 	playerbody->setRotationEnable(false);
 	playerbody->setGravityEnable(false);
 	playerbody->setLinearDamping(0.0f);
+	playerbody->setPositionOffset(Vec2(0.0, -25.0f));
 	player1->setPhysicsBody(playerbody);
 	player1->setName("player");
 
@@ -128,9 +129,10 @@ void GameScene::addSprite(){
 	player2->setScale(2.0f, 2.0f);
 
 	//添加玩家2刚体
-	playerbody = PhysicsBody::createBox(player2->getContentSize() * 0.8f, PhysicsMaterial(1000.0f, 0.0f, 50.0f));
+	playerbody = PhysicsBody::createBox(player2->getContentSize() * 0.4f, PhysicsMaterial(1000.0f, 0.0f, 50.0f));
 	playerbody->setDynamic(true);
 	playerbody->setRotationEnable(false);
+	playerbody->setPositionOffset(Vec2(0.0, -35.0f));
 	playerbody->setGravityEnable(false);
 	playerbody->setLinearDamping(0.0f);
 	player2->setPhysicsBody(playerbody);
@@ -141,8 +143,10 @@ void GameScene::addSprite(){
 	//血条
 	Sprite* sp1 = Sprite::create("hp.png", CC_RECT_PIXELS_TO_POINTS(Rect(0, 320, 420, 47)));
 	Sprite* sp2 = Sprite::create("hp.png", CC_RECT_PIXELS_TO_POINTS(Rect(0, 320, 420, 47)));
+	Sprite* ssp1 = Sprite::create("hp.png", CC_RECT_PIXELS_TO_POINTS(Rect(610, 362, 4, 16)));
+	Sprite* ssp2 = Sprite::create("hp.png", CC_RECT_PIXELS_TO_POINTS(Rect(610, 362, 4, 16)));
 
-	pT1 = ProgressTimer::create(sp1);
+	pT1 = ProgressTimer::create(ssp1);
 	pT1->setScaleX(90);
 	pT1->setAnchorPoint(Vec2(0, 0));
 	pT1->setType(ProgressTimerType::BAR);
@@ -155,17 +159,17 @@ void GameScene::addSprite(){
 	sp1->setPosition(Vec2(origin.x + pT1->getContentSize().width, origin.y + visibleSize.height - sp1->getContentSize().height));
 	addChild(sp1, 1);
 
-	pT2 = ProgressTimer::create(sp2);
+	pT2 = ProgressTimer::create(ssp2);
 	pT2->setScaleX(90);
 	pT2->setAnchorPoint(Vec2(0, 0));
 	pT2->setType(ProgressTimerType::BAR);
 	pT2->setBarChangeRate(Point(1, 0));
 	pT2->setMidpoint(Point(0, 1));
 	pT2->setPercentage(100);
-	pT2->setPosition(Vec2(origin.x + 14 * pT2->getContentSize().width + 500, origin.y + visibleSize.height - 2 * pT2->getContentSize().height));
+	pT2->setPosition(Vec2(visibleSize.width - 250 + 14 * pT2->getContentSize().width, origin.y + visibleSize.height - 2 * pT2->getContentSize().height));
 	addChild(pT2, 2);
 	sp2->setAnchorPoint(Vec2(0, 0));
-	sp2->setPosition(Vec2(origin.x + pT2->getContentSize().width + 500, origin.y + visibleSize.height - sp2->getContentSize().height));
+	sp2->setPosition(Vec2(visibleSize.width - 250, origin.y + visibleSize.height - sp2->getContentSize().height));
 	addChild(sp2, 1);
 
 
